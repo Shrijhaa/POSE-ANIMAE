@@ -16,6 +16,9 @@
         "strictFunctionTypes": true,
         "strictPropertyInitialization": true,
         "strictBindCallApply": true,
+        "typeRoots": [
+            "./node_modules/@types"
+        ]
     },
     "exclude": [
         "node_modules",

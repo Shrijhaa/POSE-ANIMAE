@@ -1,4 +1,6 @@
 import * as Kalidokit from "../dist";
+import * as fs from 'fs';
+
 //Import Helper Functions from Kalidokit
 const remap = Kalidokit.Utils.remap;
 const clamp = Kalidokit.Utils.clamp;
@@ -44,6 +46,7 @@ function animate() {
     renderer.render(scene, orbitCamera);
 }
 animate();
+console.log("3D env setup call");
 
 /* VRM CHARACTER SETUP */
 
@@ -68,6 +71,8 @@ loader.load(
 
     (error) => console.error(error)
 );
+
+console.log("3D model loader called!!!");
 
 // Animate Rotation Helper function
 const rigRotation = (name, rotation = { x: 0, y: 0, z: 0 }, dampener = 1, lerpAmount = 0.3) => {
@@ -144,6 +149,8 @@ const animateVRM = (vrm, results) => {
     if (!vrm) {
         return;
     }
+
+
     // Take the results from `Holistic` and animate character based on its Face, Pose, and Hand Keypoints.
     let riggedPose, riggedLeftHand, riggedRightHand, riggedFace;
 
@@ -156,6 +163,40 @@ const animateVRM = (vrm, results) => {
     const leftHandLandmarks = results.rightHandLandmarks;
     const rightHandLandmarks = results.leftHandLandmarks;
 
+//         //store landmarks to json file
+
+    
+// if(c<2){
+
+// const fs = require('fs');
+// const customer = {
+//     name: "Newbie Co.",
+//     order_count: 0,
+//     address: "Po Box City",
+// }
+// const jsonString = JSON.stringify(customer)
+// fs.writeFile('./hands.txt', jsonString, err => {
+//     if (err) {
+//         console.log('Error writing file', err)
+//     } else {
+//         console.log('Successfully wrote file')
+//     }
+// });
+
+// }
+
+    // //increment count
+
+    // c=c+1;
+    // console.log("c : ",c);
+
+    
+
+
+
+
+
+
     // Animate Face
     if (faceLandmarks) {
         riggedFace = Kalidokit.Face.solve(faceLandmarks, {
@@ -167,6 +208,23 @@ const animateVRM = (vrm, results) => {
 
     // Animate Pose
     if (pose2DLandmarks && pose3DLandmarks) {
+
+
+        console.log("pose-0");
+
+        //for iteration of landmarks
+
+        // console.log(pose2DLandmarks);
+        // console.log(pose3DLandmarks);
+        // function iterate(item, index, array) {
+        //     console.log(index,item);
+        // }
+        // pose3DLandmarks.forEach(iterate);
+
+
+        // console.log("pose1");
+
+
         riggedPose = Kalidokit.Pose.solve(pose3DLandmarks, pose2DLandmarks, {
             runtime: "mediapipe",
             video: videoElement,
@@ -221,6 +279,8 @@ const animateVRM = (vrm, results) => {
         rigRotation("LeftLittleProximal", riggedLeftHand.LeftLittleProximal);
         rigRotation("LeftLittleIntermediate", riggedLeftHand.LeftLittleIntermediate);
         rigRotation("LeftLittleDistal", riggedLeftHand.LeftLittleDistal);
+        console.log("5"); 
+    
     }
     if (rightHandLandmarks) {
         riggedRightHand = Kalidokit.Hand.solve(rightHandLandmarks, "Right");
@@ -245,16 +305,26 @@ const animateVRM = (vrm, results) => {
         rigRotation("RightLittleProximal", riggedRightHand.RightLittleProximal);
         rigRotation("RightLittleIntermediate", riggedRightHand.RightLittleIntermediate);
         rigRotation("RightLittleDistal", riggedRightHand.RightLittleDistal);
+        console.log("6");   
     }
+
+    console.log("Animatedd!!!!!!! VRM");
 };
 
 /* SETUP MEDIAPIPE HOLISTIC INSTANCE */
 let videoElement = document.querySelector(".input_video"),
     guideCanvas = document.querySelector("canvas.guides");
 
+const canvasElement = document.getElementById('canvas');
+
 const onResults = (results) => {
+
+    console.log("onresults  : ",results);
+    console.log("draw");
     // Draw landmark guides
     drawResults(results);
+
+    console.log(" animate");
     // Animate model
     animateVRM(currentVrm, results);
 };
@@ -317,14 +387,60 @@ const drawResults = (results) => {
         color: "#ff0364",
         lineWidth: 2,
     });
+
+    console.log(" draw called!!!");
+
 };
 
 // Use `Mediapipe` utils to get camera - lower resolution = higher fps
-const camera = new Camera(videoElement, {
-    onFrame: async () => {
-        await holistic.send({ image: videoElement });
-    },
-    width: 640,
-    height: 480,
-});
-camera.start();
+// const camera = new Camera(videoElement, {
+//     onFrame: async () => {
+//         await holistic.send({ image: videoElement });
+//     },
+//     width: 640,
+//     height: 480,
+// });
+// camera.start();
+
+
+// JavaScript
+const vElement = document.getElementById('input_video');
+
+const context = canvasElement.getContext('2d');
+let model = null;
+
+async function main() {
+  
+  // Play video
+  vElement.muted = true;
+  vElement.play();
+
+
+  // Process each video frame
+  async function processFrame() {
+    // Draw video frame on canvas
+    context.drawImage(vElement, 0, 0, canvasElement.width, canvasElement.height);
+
+    // Pass canvas image to MediaPipe Holistic model for processing
+    const image = canvasElement.toDataURL('image/png');
+    console.log("image call");
+ 
+
+    await holistic.send({ image: vElement }).then((results) => {
+        // Access the results of the inference
+
+        
+    });
+
+
+     
+    // Request next frame
+    requestAnimationFrame(processFrame);
+  }
+
+  // Start processing video frames
+  requestAnimationFrame(processFrame);
+}
+
+main();
+
