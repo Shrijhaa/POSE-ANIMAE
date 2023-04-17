@@ -25,6 +25,14 @@ export class HandSolver {
         handRotation.y = handRotation.z;
         handRotation.y -= side === LEFT ? 0.4 : 0.4;
 
+        // let Ringp = {
+        //     "x":(lm[14].x+lm[13].x)/2,
+        //     "y":(lm[14].y+lm[13].y)/2,
+        //     "z":(lm[14].z+lm[13].z)/2
+        // }
+
+        // console.log("Ringp changed!!!!!!!");
+
         let hand: Record<string, unknown> = {};
         hand[side + "Wrist"] = { x: handRotation.x, y: handRotation.y, z: handRotation.z };
         hand[side + "RingProximal"] = { x: 0, y: 0, z: Vector.angleBetween3DCoords(lm[0], lm[13], lm[14]) };

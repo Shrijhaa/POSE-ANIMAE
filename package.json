@@ -63,6 +63,9 @@
     "license": "MIT",
     "year": "2020-2021",
     "dependencies": {
-        "@mediapipe/holistic": "^0.5.1675471629"
+        "@mediapipe/holistic": "^0.5.1675471629",
+        "exceljs": "^4.3.0",
+        "fs": "^0.0.1-security",
+        "xlsx": "^0.18.5"
     }
 }

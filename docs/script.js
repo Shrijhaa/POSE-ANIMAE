@@ -1,5 +1,36 @@
 import * as Kalidokit from "../dist";
-import * as fs from 'fs';
+import left_hand from "./default_landmarks/left_hand.json";
+import right_hand from "./default_landmarks/ryt_hand.json";
+import face from "./default_landmarks/face.json";
+import pose from "./default_landmarks/pose.json";
+
+
+
+
+//store json file into array to handle default landmarks
+
+const default_left =[];
+for(let i=0;i<21;i++){
+    default_left[i]=left_hand[i]
+}
+
+const default_right =[];
+for(let i=0;i<21;i++){
+    default_right[i]=right_hand[i]
+}
+
+
+const default_pose =[];
+for(let i=0;i<33;i++){
+    default_pose[i]=pose[i]
+}
+
+
+const default_face =[];
+for(let i=0;i<468;i++){
+    default_face[i]=face[i]
+}
+
 
 //Import Helper Functions from Kalidokit
 const remap = Kalidokit.Utils.remap;
@@ -75,10 +106,14 @@ loader.load(
 console.log("3D model loader called!!!");
 
 // Animate Rotation Helper function
-const rigRotation = (name, rotation = { x: 0, y: 0, z: 0 }, dampener = 1, lerpAmount = 0.3) => {
+const rigRotation = (name, rotation = { x: 0, y: 0, z: 0 }, dampener = 1.5, lerpAmount = 0.7) => {
+
+    //current vrm is undefined means thegltf is not loaded and the 3d env is not set....then return null
     if (!currentVrm) {
         return;
     }
+
+    //get VRM part for given name 
     const Part = currentVrm.humanoid.getBoneNode(THREE.VRMSchema.HumanoidBoneName[name]);
     if (!Part) {
         return;
@@ -163,38 +198,48 @@ const animateVRM = (vrm, results) => {
     const leftHandLandmarks = results.rightHandLandmarks;
     const rightHandLandmarks = results.leftHandLandmarks;
 
-//         //store landmarks to json file
+
+     
+    //print landmarks from json file
+    // console.log("extracted  : ",left_hand[0].x)
+
+    //HANDLE UNDETECTED LEFT HAND LANDMARKS
+  
+    function iterate(item, index, array) {
+        if(typeof leftHandLandmarks[index] === "undefined"){
+            console.log("BEFORE : ",leftHandLandmarks[index]);
+            leftHandLandmarks[index]=left_hand[index];
+            console.log("AFTER : ",leftHandLandmarks[index]);
+        }
+        //console.log(index,item);
+    }
+    if(leftHandLandmarks){
+
+        console.log("handle left landmarks single entry");
+        leftHandLandmarks.forEach(iterate);
+        
+
+    }
+
+   
+
+    //HANDLE UNDETECTED RIGHT HAND LANDMARKS
 
     
-// if(c<2){
+    function riterate(item, index, array) {
+        if(typeof rightHandLandmarks[index] === "undefined"){
+            console.log("BEFORE : ",rightHandLandmarks[index]);
+            rightHandLandmarks[index]=right_hand[index];
+            console.log("AFTER : ",rightHandLandmarks[index]);
 
-// const fs = require('fs');
-// const customer = {
-//     name: "Newbie Co.",
-//     order_count: 0,
-//     address: "Po Box City",
-// }
-// const jsonString = JSON.stringify(customer)
-// fs.writeFile('./hands.txt', jsonString, err => {
-//     if (err) {
-//         console.log('Error writing file', err)
-//     } else {
-//         console.log('Successfully wrote file')
-//     }
-// });
-
-// }
-
-    // //increment count
-
-    // c=c+1;
-    // console.log("c : ",c);
-
+        }
+        //console.log(index,item);
+    }
+    if(rightHandLandmarks){
+    console.log("handle right landmarks single entry");
+    rightHandLandmarks.forEach(riterate);
     
-
-
-
-
+    }
 
 
     // Animate Face
@@ -206,22 +251,27 @@ const animateVRM = (vrm, results) => {
         rigFace(riggedFace);
     }
 
+    else{
+        console.log("HANDLED FACE LANDMARKS");
+        
+        
+        riggedFace = Kalidokit.Face.solve(default_face, {
+            runtime: "mediapipe",
+            video: videoElement,
+        });
+        rigFace(riggedFace);
+    }
     // Animate Pose
     if (pose2DLandmarks && pose3DLandmarks) {
 
 
-        console.log("pose-0");
-
         //for iteration of landmarks
-
         // console.log(pose2DLandmarks);
         // console.log(pose3DLandmarks);
         // function iterate(item, index, array) {
         //     console.log(index,item);
         // }
         // pose3DLandmarks.forEach(iterate);
-
-
         // console.log("pose1");
 
 
@@ -255,11 +305,47 @@ const animateVRM = (vrm, results) => {
         rigRotation("RightLowerLeg", riggedPose.RightLowerLeg, 1, 0.3);
     }
 
+
+    else{
+        console.log("HANDLED POSE LANDMARKS");
+
+            riggedPose = Kalidokit.Pose.solve(default_pose, default_pose, {
+                runtime: "mediapipe",
+                video: videoElement,
+            });
+            rigRotation("Hips", riggedPose.Hips.rotation, 0.7);
+            rigPosition(
+                "Hips",
+                {
+                    x: riggedPose.Hips.position.x, // Reverse direction
+                    y: riggedPose.Hips.position.y + 1, // Add a bit of height
+                    z: -riggedPose.Hips.position.z, // Reverse direction
+                },
+                1,
+                0.07
+            );
+    
+            rigRotation("Chest", riggedPose.Spine, 0.25, 0.3);
+            rigRotation("Spine", riggedPose.Spine, 0.45, 0.3);
+    
+            rigRotation("RightUpperArm", riggedPose.RightUpperArm, 1, 0.3);
+            rigRotation("RightLowerArm", riggedPose.RightLowerArm, 1, 0.3);
+            rigRotation("LeftUpperArm", riggedPose.LeftUpperArm, 1, 0.3);
+            rigRotation("LeftLowerArm", riggedPose.LeftLowerArm, 1, 0.3);
+    
+            rigRotation("LeftUpperLeg", riggedPose.LeftUpperLeg, 1, 0.3);
+            rigRotation("LeftLowerLeg", riggedPose.LeftLowerLeg, 1, 0.3);
+            rigRotation("RightUpperLeg", riggedPose.RightUpperLeg, 1, 0.3);
+            rigRotation("RightLowerLeg", riggedPose.RightLowerLeg, 1, 0.3);
+        
+    }
+
     // Animate Hands
     if (leftHandLandmarks) {
         riggedLeftHand = Kalidokit.Hand.solve(leftHandLandmarks, "Left");
         rigRotation("LeftHand", {
             // Combine pose rotation Z and hand rotation X Y
+            // z: riggedPose.LeftHand.z,
             z: riggedPose.LeftHand.z,
             y: riggedLeftHand.LeftWrist.y,
             x: riggedLeftHand.LeftWrist.x,
@@ -282,8 +368,67 @@ const animateVRM = (vrm, results) => {
         console.log("5"); 
     
     }
+
+    else{
+
+        console.log("HANDLED LEFT LANDMARKS");
+        
+            riggedLeftHand = Kalidokit.Hand.solve(default_left, "Left");
+            rigRotation("LeftHand", {
+                // Combine pose rotation Z and hand rotation X Y
+                z: riggedPose.LeftHand.z,
+                y: riggedLeftHand.LeftWrist.y,
+                x: riggedLeftHand.LeftWrist.x,
+            });
+            rigRotation("LeftRingProximal", riggedLeftHand.LeftRingProximal);
+            rigRotation("LeftRingIntermediate", riggedLeftHand.LeftRingIntermediate);
+            rigRotation("LeftRingDistal", riggedLeftHand.LeftRingDistal);
+            rigRotation("LeftIndexProximal", riggedLeftHand.LeftIndexProximal);
+            rigRotation("LeftIndexIntermediate", riggedLeftHand.LeftIndexIntermediate);
+            rigRotation("LeftIndexDistal", riggedLeftHand.LeftIndexDistal);
+            rigRotation("LeftMiddleProximal", riggedLeftHand.LeftMiddleProximal);
+            rigRotation("LeftMiddleIntermediate", riggedLeftHand.LeftMiddleIntermediate);
+            rigRotation("LeftMiddleDistal", riggedLeftHand.LeftMiddleDistal);
+            rigRotation("LeftThumbProximal", riggedLeftHand.LeftThumbProximal);
+            rigRotation("LeftThumbIntermediate", riggedLeftHand.LeftThumbIntermediate);
+            rigRotation("LeftThumbDistal", riggedLeftHand.LeftThumbDistal);
+            rigRotation("LeftLittleProximal", riggedLeftHand.LeftLittleProximal);
+            rigRotation("LeftLittleIntermediate", riggedLeftHand.LeftLittleIntermediate);
+            rigRotation("LeftLittleDistal", riggedLeftHand.LeftLittleDistal);
+            console.log("5"); 
+        
+        
+    }
+
     if (rightHandLandmarks) {
         riggedRightHand = Kalidokit.Hand.solve(rightHandLandmarks, "Right");
+        rigRotation("RightHand", {
+            // Combine Z axis from pose hand and X/Y axis from hand wrist rotation
+            z: riggedPose.RightHand.z,
+            y: riggedRightHand.RightWrist.y,
+            x: riggedRightHand.RightWrist.x,
+        });
+        rigRotation("RightRingProximal", riggedRightHand.RightRingProximal);
+        rigRotation("RightRingIntermediate", riggedRightHand.RightRingIntermediate);
+        rigRotation("RightRingDistal", riggedRightHand.RightRingDistal);
+        rigRotation("RightIndexProximal", riggedRightHand.RightIndexProximal);
+        rigRotation("RightIndexIntermediate", riggedRightHand.RightIndexIntermediate);
+        rigRotation("RightIndexDistal", riggedRightHand.RightIndexDistal);
+        rigRotation("RightMiddleProximal", riggedRightHand.RightMiddleProximal);
+        rigRotation("RightMiddleIntermediate", riggedRightHand.RightMiddleIntermediate);
+        rigRotation("RightMiddleDistal", riggedRightHand.RightMiddleDistal);
+        rigRotation("RightThumbProximal", riggedRightHand.RightThumbProximal);
+        rigRotation("RightThumbIntermediate", riggedRightHand.RightThumbIntermediate);
+        rigRotation("RightThumbDistal", riggedRightHand.RightThumbDistal);
+        rigRotation("RightLittleProximal", riggedRightHand.RightLittleProximal);
+        rigRotation("RightLittleIntermediate", riggedRightHand.RightLittleIntermediate);
+        rigRotation("RightLittleDistal", riggedRightHand.RightLittleDistal);
+        console.log("6");   
+    }
+
+    else {
+        console.log("HANDLED RIGHT LANDMARKS");
+        riggedRightHand = Kalidokit.Hand.solve(default_right, "Right");
         rigRotation("RightHand", {
             // Combine Z axis from pose hand and X/Y axis from hand wrist rotation
             z: riggedPose.RightHand.z,
@@ -392,7 +537,7 @@ const drawResults = (results) => {
 
 };
 
-// Use `Mediapipe` utils to get camera - lower resolution = higher fps
+//Use `Mediapipe` utils to get camera - lower resolution = higher fps
 // const camera = new Camera(videoElement, {
 //     onFrame: async () => {
 //         await holistic.send({ image: videoElement });
