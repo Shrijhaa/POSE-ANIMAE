@@ -345,8 +345,8 @@ const animateVRM = (vrm, results) => {
         riggedLeftHand = Kalidokit.Hand.solve(leftHandLandmarks, "Left");
         rigRotation("LeftHand", {
             // Combine pose rotation Z and hand rotation X Y
-            // z: riggedPose.LeftHand.z,
             z: riggedPose.LeftHand.z,
+            // z: riggedLeftHand.LeftWrist.z,
             y: riggedLeftHand.LeftWrist.y,
             x: riggedLeftHand.LeftWrist.x,
         });
@@ -538,54 +538,54 @@ const drawResults = (results) => {
 };
 
 //Use `Mediapipe` utils to get camera - lower resolution = higher fps
-// const camera = new Camera(videoElement, {
-//     onFrame: async () => {
-//         await holistic.send({ image: videoElement });
-//     },
-//     width: 640,
-//     height: 480,
-// });
-// camera.start();
+const camera = new Camera(videoElement, {
+    onFrame: async () => {
+        await holistic.send({ image: videoElement });
+    },
+    width: 640,
+    height: 480,
+});
+camera.start();
 
 
-// JavaScript
-const vElement = document.getElementById('input_video');
+// // JavaScript
+// const vElement = document.getElementById('input_video');
 
-const context = canvasElement.getContext('2d');
-let model = null;
+// const context = canvasElement.getContext('2d');
+// let model = null;
 
-async function main() {
+// async function main() {
   
-  // Play video
-  vElement.muted = true;
-  vElement.play();
+//   // Play video
+//   vElement.muted = true;
+//   vElement.play();
 
 
-  // Process each video frame
-  async function processFrame() {
-    // Draw video frame on canvas
-    context.drawImage(vElement, 0, 0, canvasElement.width, canvasElement.height);
+//   // Process each video frame
+//   async function processFrame() {
+//     // Draw video frame on canvas
+//     context.drawImage(vElement, 0, 0, canvasElement.width, canvasElement.height);
 
-    // Pass canvas image to MediaPipe Holistic model for processing
-    const image = canvasElement.toDataURL('image/png');
-    console.log("image call");
+//     // Pass canvas image to MediaPipe Holistic model for processing
+//     const image = canvasElement.toDataURL('image/png');
+//     console.log("image call");
  
 
-    await holistic.send({ image: vElement }).then((results) => {
-        // Access the results of the inference
+//     await holistic.send({ image: vElement }).then((results) => {
+//         // Access the results of the inference
 
         
-    });
+//     });
 
 
      
-    // Request next frame
-    requestAnimationFrame(processFrame);
-  }
+//     // Request next frame
+//     requestAnimationFrame(processFrame);
+//   }
 
-  // Start processing video frames
-  requestAnimationFrame(processFrame);
-}
+//   // Start processing video frames
+//   requestAnimationFrame(processFrame);
+// }
 
-main();
+// main();
 
