@@ -207,15 +207,15 @@ const animateVRM = (vrm, results) => {
   
     function iterate(item, index, array) {
         if(typeof leftHandLandmarks[index] === "undefined"){
-            console.log("BEFORE : ",leftHandLandmarks[index]);
+           
             leftHandLandmarks[index]=left_hand[index];
-            console.log("AFTER : ",leftHandLandmarks[index]);
+          
         }
         //console.log(index,item);
     }
     if(leftHandLandmarks){
 
-        console.log("handle left landmarks single entry");
+        
         leftHandLandmarks.forEach(iterate);
         
 
@@ -228,15 +228,15 @@ const animateVRM = (vrm, results) => {
     
     function riterate(item, index, array) {
         if(typeof rightHandLandmarks[index] === "undefined"){
-            console.log("BEFORE : ",rightHandLandmarks[index]);
+           
             rightHandLandmarks[index]=right_hand[index];
-            console.log("AFTER : ",rightHandLandmarks[index]);
+            
 
         }
         //console.log(index,item);
     }
     if(rightHandLandmarks){
-    console.log("handle right landmarks single entry");
+    
     rightHandLandmarks.forEach(riterate);
     
     }
@@ -252,7 +252,7 @@ const animateVRM = (vrm, results) => {
     }
 
     else{
-        console.log("HANDLED FACE LANDMARKS");
+        
         
         
         riggedFace = Kalidokit.Face.solve(default_face, {
@@ -265,14 +265,6 @@ const animateVRM = (vrm, results) => {
     if (pose2DLandmarks && pose3DLandmarks) {
 
 
-        //for iteration of landmarks
-        // console.log(pose2DLandmarks);
-        // console.log(pose3DLandmarks);
-        // function iterate(item, index, array) {
-        //     console.log(index,item);
-        // }
-        // pose3DLandmarks.forEach(iterate);
-        // console.log("pose1");
 
 
         riggedPose = Kalidokit.Pose.solve(pose3DLandmarks, pose2DLandmarks, {
@@ -307,7 +299,7 @@ const animateVRM = (vrm, results) => {
 
 
     else{
-        console.log("HANDLED POSE LANDMARKS");
+        
 
             riggedPose = Kalidokit.Pose.solve(default_pose, default_pose, {
                 runtime: "mediapipe",
@@ -365,13 +357,13 @@ const animateVRM = (vrm, results) => {
         rigRotation("LeftLittleProximal", riggedLeftHand.LeftLittleProximal);
         rigRotation("LeftLittleIntermediate", riggedLeftHand.LeftLittleIntermediate);
         rigRotation("LeftLittleDistal", riggedLeftHand.LeftLittleDistal);
-        console.log("5"); 
+        
     
     }
 
     else{
 
-        console.log("HANDLED LEFT LANDMARKS");
+       
         
             riggedLeftHand = Kalidokit.Hand.solve(default_left, "Left");
             rigRotation("LeftHand", {
@@ -395,7 +387,7 @@ const animateVRM = (vrm, results) => {
             rigRotation("LeftLittleProximal", riggedLeftHand.LeftLittleProximal);
             rigRotation("LeftLittleIntermediate", riggedLeftHand.LeftLittleIntermediate);
             rigRotation("LeftLittleDistal", riggedLeftHand.LeftLittleDistal);
-            console.log("5"); 
+           
         
         
     }
@@ -423,11 +415,11 @@ const animateVRM = (vrm, results) => {
         rigRotation("RightLittleProximal", riggedRightHand.RightLittleProximal);
         rigRotation("RightLittleIntermediate", riggedRightHand.RightLittleIntermediate);
         rigRotation("RightLittleDistal", riggedRightHand.RightLittleDistal);
-        console.log("6");   
+         
     }
 
     else {
-        console.log("HANDLED RIGHT LANDMARKS");
+       
         riggedRightHand = Kalidokit.Hand.solve(default_right, "Right");
         rigRotation("RightHand", {
             // Combine Z axis from pose hand and X/Y axis from hand wrist rotation
@@ -453,7 +445,7 @@ const animateVRM = (vrm, results) => {
         console.log("6");   
     }
 
-    console.log("Animatedd!!!!!!! VRM");
+    
 };
 
 /* SETUP MEDIAPIPE HOLISTIC INSTANCE */
@@ -464,12 +456,10 @@ const canvasElement = document.getElementById('canvas');
 
 const onResults = (results) => {
 
-    console.log("onresults  : ",results);
-    console.log("draw");
+    
     // Draw landmark guides
     drawResults(results);
 
-    console.log(" animate");
     // Animate model
     animateVRM(currentVrm, results);
 };
@@ -533,59 +523,65 @@ const drawResults = (results) => {
         lineWidth: 2,
     });
 
-    console.log(" draw called!!!");
+
 
 };
 
 //Use `Mediapipe` utils to get camera - lower resolution = higher fps
-const camera = new Camera(videoElement, {
-    onFrame: async () => {
-        await holistic.send({ image: videoElement });
-    },
-    width: 640,
-    height: 480,
-});
-camera.start();
+// const camera = new Camera(videoElement, {
+//     onFrame: async () => {
+//         await holistic.send({ image: videoElement });
+//     },
+//     width: 640,
+//     height: 480,
+// });
+// camera.start();
 
 
-// // JavaScript
-// const vElement = document.getElementById('input_video');
+// JavaScript
+const vElement = document.getElementById('input_video');
 
-// const context = canvasElement.getContext('2d');
-// let model = null;
 
-// async function main() {
+
+const context = canvasElement.getContext('2d');
+let model = null;
+
+async function main() {
   
-//   // Play video
-//   vElement.muted = true;
-//   vElement.play();
+  // Play video
+  if(vElement.src){
+
+  
+  vElement.muted = true;
+  vElement.play();
 
 
-//   // Process each video frame
-//   async function processFrame() {
-//     // Draw video frame on canvas
-//     context.drawImage(vElement, 0, 0, canvasElement.width, canvasElement.height);
+  // Process each video frame
+  async function processFrame() {
+    // Draw video frame on canvas
+    context.drawImage(vElement, 0, 0, canvasElement.width, canvasElement.height);
 
-//     // Pass canvas image to MediaPipe Holistic model for processing
-//     const image = canvasElement.toDataURL('image/png');
-//     console.log("image call");
+    // Pass canvas image to MediaPipe Holistic model for processing
+    const image = canvasElement.toDataURL('image/png');
+    console.log("image call");
  
 
-//     await holistic.send({ image: vElement }).then((results) => {
-//         // Access the results of the inference
+    await holistic.send({ image: vElement }).then((results) => {
+        // Access the results of the inference
 
         
-//     });
+    });
 
 
      
-//     // Request next frame
-//     requestAnimationFrame(processFrame);
-//   }
+    // Request next frame
+    requestAnimationFrame(processFrame);
+  }
 
-//   // Start processing video frames
-//   requestAnimationFrame(processFrame);
-// }
+  // Start processing video frames
+  requestAnimationFrame(processFrame);
+}
+}
 
-// main();
+main();
 

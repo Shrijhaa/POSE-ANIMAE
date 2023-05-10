@@ -39,11 +39,34 @@
   </head>
   <body>
     <div class="preview">
-      <video class="input_video" id="input_video" src="../asset/uva_clap.mp4" loop></video>
+      <video class="input_video" id="input_video" loop src="../asset/pastor.mp4"></video>
       <canvas class="guides" id="canvas"></canvas>
-      
     </div>
    
-    <script src="./script.js" type="module" defer></script>
-  </body>
+
+  <div id="div_language" style="display:none">
+    <h2 class="mb-3 text-light">Select Language</h2>
+    <select class="form-select bg-secondary text-light" id="select_language" onchange="updateCountry()"></select>
+    <select class="form-select bg-secondary text-light mt-2" id="select_dialect"></select>
+  </div>
+
+  <h2 class="mt-4 text-light">Speech Recognition</h2>
+  
+  <h3 id="sign"></h3>
+  
+  <div class="p-3" style="border: 1px solid gray; height: 100px; border-radius: 8px;">
+    <span id="final" class="text-light"></span>
+    <span id="interim" class="text-secondary"></span>
+  </div>
+
+
+  <div class="mt-4">
+    <button class="btn btn-success" id="start">Start</button>
+    <button class="btn btn-danger" id="stop">Stop</button>
+    <p id="status" class="lead mt-3 text-light" style="display: none">Listenting ...</p>
+  </div>
+</body>
+<script src="./speechRecognition.js"></script>
+<script src="./language.js"></script>
+<script src="./script.js" type="module" defer></script>
 </html>
